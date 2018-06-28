@@ -1,15 +1,18 @@
 # git-all
 
-git-all will pull or clone every repo in an organization on github, providing your api key has access.
+git-all is a tool written in go that will pull or clone every repo in an organization on github, providing your api key has access.
 
 ## install
 
 ```
+Install go
 git clone git@github.com:jrieck1991/git-all.git
 cd git-all
 go get
 # mac osx
 GOOS=darwin go install .
+# linux
+GOOS=linux go install .
 ```
 
 ## git-all --help
