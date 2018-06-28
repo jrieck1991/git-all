@@ -1,0 +1,5 @@
+# gitignore
+notes.txt
+repos/
+.DS_Store
+test_envs.env
