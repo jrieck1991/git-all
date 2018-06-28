@@ -6,6 +6,8 @@ git-all is a tool written in go that will pull or clone every repo in an organiz
 
 ```
 Install go
+# change to src directory within go path
+cd ~/go/src/
 git clone git@github.com:jrieck1991/git-all.git
 cd git-all
 go get

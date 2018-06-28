@@ -137,13 +137,13 @@ func initUser() *gitCreds {
 			*gitUser = findGitConfigLine("user =")
 		}
 		if *gitUser == "" {
-			return nil
+			log.Fatalln("must specifiy github username")
 		}
 	}
 	if *repoDir == "" {
 		*repoDir = os.Getenv("REPO_DIR")
 		if *repoDir == "" {
-			return nil
+			log.Fatalln("must specifiy local directory to store git repos")
 		}
 	}
 	if *gitAPIKey == "" {
@@ -152,7 +152,7 @@ func initUser() *gitCreds {
 			*gitAPIKey = findGitConfigLine("token =")
 		}
 		if *gitAPIKey == "" {
-			return nil
+			log.Fatalln("must specifiy a valid github user api key")
 		}
 	}
 	if *org == "" {
