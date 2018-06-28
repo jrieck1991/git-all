@@ -1,6 +1,6 @@
 # git-all
 
-git-all
+git-all will pull or clone every repo in an organization on github, providing your api key has access.
 
 ## install
 
