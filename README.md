@@ -24,9 +24,12 @@ Usage of git-all:
 
 It's possible to use ~/.gitconfig to set your github api key and user
 ```
+git config --global github.user jrieck1991
+git config --global github.token XXXXXXXXX
+
 # ~/.gitconfig
 [github]
-	user = jackrieck
+	user = jrieck1991
 	token = XXXXXXXXXXXX
 ```
 
