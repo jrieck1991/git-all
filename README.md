@@ -1,6 +1,8 @@
 # git-all
 
-# install
+git-all
+
+## install
 
 ```
 git clone git@github.com:jrieck1991/git-all.git
@@ -35,7 +37,19 @@ git config --global github.token XXXXXXXXX
 
 Or environment variables for api key, repo & user name
 ```
-export GIT_USER=jrieck
+export GIT_USER=jrieck1991
 export REPO_DIR=repos/
 export GITHUB_API_KEY=XXXXXXX
+```
+
+## Usage Examples
+
+#### pull/clone all repos from the my-repo organization to the repos directory using env vars or ~/.gitconfig
+```
+git-all -o my-repo -r repos/
+```
+
+#### pull/clone all repos from the my-repo organization to the repos directory using flags
+```
+git-all -o my-repo -u jrieck1991 -a XXXXXX -r repos/
 ```
