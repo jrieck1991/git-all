@@ -8,6 +8,7 @@ git-all will pull or clone every repo in an organization on github, providing yo
 git clone git@github.com:jrieck1991/git-all.git
 cd git-all
 go get
+# mac osx
 GOOS=darwin go install .
 ```
 
