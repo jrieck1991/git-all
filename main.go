@@ -22,9 +22,9 @@ type gitCreds struct {
 }
 
 const (
-	ctxTimeout      = 420 * time.Second
-	osCmdTimeout    = 300 * time.Second
-	repoListTimeout = 60 * time.Second
+	ctxTimeout      = 1200 * time.Second
+	osCmdTimeout    = 1200 * time.Second
+	repoListTimeout = 1200 * time.Second
 )
 
 func main() {
