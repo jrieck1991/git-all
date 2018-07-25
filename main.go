@@ -88,7 +88,7 @@ func getRepoList(ctx context.Context, org string, client *github.Client, opt *gi
 	// set timeout for getting repo lists from github
 	repoListCTX, cancel := context.WithTimeout(ctx, repoListTimeout)
 	defer cancel()
-	// list repos, paginated
+	// list repos, paginate
 	repos, response, err := client.Repositories.ListByOrg(repoListCTX, org, opt)
 	if err != nil {
 		if ctx.Err() != nil {
