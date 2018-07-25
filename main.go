@@ -22,9 +22,9 @@ type gitCreds struct {
 }
 
 const (
-	ctxTimeout      = 240 * time.Second
-	osCmdTimeout    = 60 * time.Second
-	repoListTimeout = 30 * time.Second
+	ctxTimeout      = 300 * time.Second // timeout for entire application
+	osCmdTimeout    = 240 * time.Second // timeout per git cmd
+	repoListTimeout = 30 * time.Second  // timeout to pull list of repos from github
 )
 
 func main() {
@@ -48,7 +48,7 @@ func main() {
 	}
 
 	// send repos to this channel
-	repoChan := make(chan []*github.Repository)
+	repoChan := make(chan []*github.Repository, 10000)
 	go func() {
 		for {
 			// Paginate through to get all repos
@@ -156,7 +156,10 @@ func initUser() *gitCreds {
 		}
 	}
 	if *org == "" {
-		log.Fatalln("must specifiy github organization to query")
+		*org = os.Getenv("GITHUB_ORG")
+		if *org == "" {
+			log.Fatalln("must specifiy github organization to query")
+		}
 	}
 
 	// populate creds struct
@@ -240,7 +243,7 @@ func getRepo(ctx context.Context, gitCmd string, c *gitCreds, r *github.Reposito
 	}
 	// git clone
 	if gitCmd == "clone" {
-		if err := exec.CommandContext(ctx, "git", "-C", c.repoDir, "clone", *r.CloneURL).Run(); err != nil {
+		if err := exec.CommandContext(ctx, "git", "-C", c.repoDir, "clone", *r.SSHURL).Run(); err != nil {
 			if ctx.Err() != nil {
 				log.Println(ctx.Err(), *r.Name)
 				return
@@ -266,7 +269,7 @@ func iterateRepos(ctx context.Context, localRepos []os.FileInfo, repos []*github
 		case <-childCTX.Done():
 			err := fmt.Errorf("context deadline exceeded for repo %s", *r.Name)
 			log.Println(err)
-			continue
+			return
 		default:
 			// check if repo exists locally
 			if exists(*r.Name, localRepos) {
