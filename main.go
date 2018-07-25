@@ -22,9 +22,9 @@ type gitCreds struct {
 }
 
 const (
-	ctxTimeout      = 300 * time.Second // timeout for entire application
-	osCmdTimeout    = 240 * time.Second // timeout per git cmd
-	repoListTimeout = 30 * time.Second  // timeout to pull list of repos from github
+	ctxTimeout      = 1200 * time.Second
+	osCmdTimeout    = 1200 * time.Second
+	repoListTimeout = 1200 * time.Second
 )
 
 func main() {
