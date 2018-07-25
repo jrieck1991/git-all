@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,8 +19,9 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type gitCreds struct {
+type userVars struct {
 	gitUser, gitAPIKey, repoDir, org string
+	CPUs                             int
 }
 
 const (
@@ -28,17 +31,21 @@ const (
 )
 
 func main() {
-	// get user specific creds
-	creds := initUser()
+	// get user specific userVars
+	userVars := initUser()
+
+	// Set resource limits
+	runtime.GOMAXPROCS(userVars.CPUs)
+
 	// gather local repos
-	localRepos := listRepoDir(creds)
+	localRepos := listRepoDir(userVars)
 
 	// set application wide timeout with context
 	ctx, cancel := context.WithTimeout(context.Background(), ctxTimeout)
 	defer cancel()
 
 	// init github client
-	client := initGithubClient(ctx, creds)
+	client := initGithubClient(ctx, userVars)
 
 	// gather repos for given org
 	opt := &github.RepositoryListByOrgOptions{
@@ -52,7 +59,7 @@ func main() {
 	go func() {
 		for {
 			// Paginate through to get all repos
-			more, err := getRepoList(ctx, creds.org, client, opt, repoChan)
+			more, err := getRepoList(ctx, userVars.org, client, opt, repoChan)
 			if err != nil {
 				log.Println(err)
 			}
@@ -74,7 +81,7 @@ Loop:
 			os.Exit(2)
 		// get repos from chan if there are any
 		case repos, open := <-repoChan:
-			iterateRepos(ctx, localRepos, repos, creds)
+			iterateRepos(ctx, localRepos, repos, userVars)
 			if !open {
 				break Loop
 			}
@@ -111,7 +118,7 @@ func getRepoList(ctx context.Context, org string, client *github.Client, opt *gi
 }
 
 // init github client
-func initGithubClient(ctx context.Context, c *gitCreds) *github.Client {
+func initGithubClient(ctx context.Context, c *userVars) *github.Client {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: c.gitAPIKey},
 	)
@@ -121,13 +128,14 @@ func initGithubClient(ctx context.Context, c *gitCreds) *github.Client {
 }
 
 // init user vars
-func initUser() *gitCreds {
-	creds := &gitCreds{}
+func initUser() *userVars {
 
+	// Flags
 	gitUser := flag.String("u", "", "github username")
 	repoDir := flag.String("r", "", "directory to download git repos into")
 	gitAPIKey := flag.String("a", "", "git api key")
 	org := flag.String("o", "", "set organziation to query")
+	CPUs := flag.Int("c", 1, "set number of CPUs this program is allowed to use, int < 1 will use max CPUs available")
 	flag.Parse()
 
 	// check for env vars then ~/.gitconfig if flags aren't set
@@ -162,14 +170,23 @@ func initUser() *gitCreds {
 		}
 	}
 
-	// populate creds struct
-	creds = &gitCreds{
+	if _, set := os.LookupEnv("GIT_CPUS"); set {
+		i, err := strconv.Atoi(os.Getenv("GIT_CPUS"))
+		if err != nil {
+			log.Fatalf("Unable to convert GIT_CPUS to int: %v", err)
+		}
+		*CPUs = i
+	}
+
+	// populate userVars struct
+	userVars := &userVars{
 		gitUser:   *gitUser,
 		gitAPIKey: *gitAPIKey,
 		repoDir:   *repoDir,
 		org:       *org,
+		CPUs:      *CPUs,
 	}
-	return creds
+	return userVars
 }
 
 // Parse git config for user
@@ -216,7 +233,7 @@ func exists(repoName string, localRepos []os.FileInfo) bool {
 }
 
 // listRepoDir
-func listRepoDir(c *gitCreds) []os.FileInfo {
+func listRepoDir(c *userVars) []os.FileInfo {
 	localRepos, err := ioutil.ReadDir(c.repoDir)
 	if err != nil {
 		log.Fatalln(err)
@@ -225,7 +242,7 @@ func listRepoDir(c *gitCreds) []os.FileInfo {
 }
 
 // getRepo pulls or clones the given repoName
-func getRepo(ctx context.Context, gitCmd string, c *gitCreds, r *github.Repository, wg *sync.WaitGroup) {
+func getRepo(ctx context.Context, gitCmd string, c *userVars, r *github.Repository, wg *sync.WaitGroup) {
 	defer wg.Done()
 	// git pull
 	if gitCmd == "pull" {
@@ -258,7 +275,7 @@ func getRepo(ctx context.Context, gitCmd string, c *gitCreds, r *github.Reposito
 }
 
 // Git pull or clone on given repos
-func iterateRepos(ctx context.Context, localRepos []os.FileInfo, repos []*github.Repository, c *gitCreds) {
+func iterateRepos(ctx context.Context, localRepos []os.FileInfo, repos []*github.Repository, c *userVars) {
 	var wg sync.WaitGroup
 	for _, r := range repos {
 		wg.Add(1)

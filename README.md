@@ -22,6 +22,8 @@ GOOS=linux go install .
 Usage of git-all:
   -a string
         git api key
+  -c int
+        set number of CPUs this program is allowed to use, int < 1 will use max CPUs available (default 1)
   -o string
         set organziation to query
   -r string
@@ -47,6 +49,7 @@ export GIT_USER=jrieck1991
 export REPO_DIR=repos/
 export GITHUB_API_KEY=XXXXXXX
 export GITHUB_ORG=org
+export GIT_CPUS=1
 ```
 
 ## Usage Examples
