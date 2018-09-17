@@ -5,16 +5,8 @@ git-all is a tool written in go that will pull or clone every repo in an organiz
 ## install
 
 ```
-Install go
-# change to src directory within go path
-cd ~/go/src/
-git clone git@github.com:jrieck1991/git-all.git
-cd git-all
-go get
-# mac osx
-GOOS=darwin go install .
-# linux
-GOOS=linux go install .
+go get -v github.com/jrieck1991/git-all
+go install github.com/jrieck1991/git-all
 ```
 
 ## git-all --help
